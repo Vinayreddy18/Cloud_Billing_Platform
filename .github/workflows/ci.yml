@@ -1,0 +1,47 @@
+name: "CI"
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "test"
+  test:
+    # The type of runner that the job will run on
+    # https://github.com/actions/virtual-environments/
+    # [x] shellcheck
+    # [_] flake8
+    # [_] terraform
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - name: Install dependencies 🔧
+        run: sudo apt-get install shellcheck flake8
+
+      # https://github.com/hashicorp/setup-terraform
+      - uses: hashicorp/setup-terraform@v4
+      
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Checkout 🛎️
+        uses: actions/checkout@v7
+
+      # Check shell scripts
+      - name: ShellCheck 🔎
+        run: shellcheck *.sh
+
+      # Check Python scripts
+      - name: Python 🔎
+        run: flake8 --ignore=W292 --max-line-length=127 --show-source --statistics function-source/*.py
+
+      # Check Terraform
+      - name: Terraform 🔎
+        run: terraform init && terraform validate
